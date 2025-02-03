@@ -1,13 +1,23 @@
+body{
+   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: hsl(174, 57%, 7%);
+    color: white;
+}
 .container{
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 .box{
-    background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
 }
 .inside{
-    background-color: white;
-    border: 2px solid black;
+    background-color: rgb(9, 54, 37);
+    border: 2px solid rgb(2, 2, 2);
+    border-radius: 10px;
     cursor: pointer;
 }
 .modal{
@@ -24,6 +34,36 @@
     width: 500px;
     height: 500px;
     overflow-y: auto;
-    background-color: rgb(99, 96, 96);
-    color: rgb(0, 0, 0);
+    background-color: rgb(44, 110, 96);
+    border: 3px solid black;
+    border-radius: 10px;
+    color: rgb(255, 255, 255);
+}
+.modalbox::-webkit-scrollbar {
+    width: 5px;
+}
+.modalbox::-webkit-scrollbar-thumb {
+    background-color: white;
+    border-radius: 4px;
+}
+.modalbox::-webkit-scrollbar-track {
+   background: hsl(155, 49%, 18%);
+  }
+
+
+#search{
+    background-color: hsl(161, 18%, 20%);
+    border-style: solid;
+    border-radius: 5px;
+    height: 30px;
+    width: 20%;
+}
+#load{
+    background-color: rgb(68, 80, 80);
+    border-style: none;
+    border: 2px black solid;
+    border-radius: 10px;
+    height: 50px;
+    cursor: pointer;
+    color: white;
 }

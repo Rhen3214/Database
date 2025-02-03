@@ -25,6 +25,7 @@ async function fetchData() {
         }
         
         let result = splitUserData();  
+        result.reverse()
 
         const box = document.querySelector('.box');
         if (box.children.length > 0) {  
@@ -32,22 +33,28 @@ async function fetchData() {
         }
         
         for (let k = 0; k < result.length; k++) {
-            const inside = result[k][0];
-            const inside2 = result[k][1]
-            const inside3 = result[k][3]
-            const inside4 = result[k][4]
+            const funder = "Funder:"+result[k][0][1]
+            const borrower = "Loan Number:"+result[k][1][1]
+            const borrowername = "Borrower:"+result[k][2][1]
+            const detail = document.createElement('div')
+            detail.classList ='inside'
+            const  fundp = document.createElement('p');
+            const borrowp = document.createElement('p');
+            const borrowernamep = document.createElement('p')
+            fundp.innerHTML = funder;
+            borrowp.innerText = borrower   
+            borrowernamep.innerText = borrowernamep
 
-            const full = [...inside,...inside2,...inside3,...inside4]
-            const loan = document.createElement('p');
-            loan.innerText = (full);
-            loan.classList.add('inside');
-            
-            box.append(loan);
+            detail.append(fundp)
+            detail.append(borrowp)
+            detail.append(borrowername)
+
+            box.append(detail)
         }
 
-        
+        document.getElementById('search').placeholder = ""
 
-        let items = document.querySelectorAll('p');
+        let items = document.querySelectorAll('.inside');
         const modal = document.querySelector('.modal');
 
         items.forEach(item => {
@@ -69,9 +76,11 @@ async function fetchData() {
             });
         });
 
-        modal.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
+        document.addEventListener('click', e=> {
+             if(e.target.classList == "modal"){
+                e.target.style.display ='none'
+             }
+        })
 
         // ✅ SEARCH FUNCTIONALITY
         const search = document.getElementById('search');
