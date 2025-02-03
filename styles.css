@@ -19,6 +19,8 @@ body{
     border: 2px solid rgb(2, 2, 2);
     border-radius: 10px;
     cursor: pointer;
+    display: flex;
+    gap: 20%;
 }
 .modal{
     background-color: rgba(5, 5, 5, 0.199);
@@ -31,8 +33,8 @@ body{
     align-items: center;
 }
 .modalbox{
-    width: 500px;
-    height: 500px;
+    width: 50%;
+    height: 60%;
     overflow-y: auto;
     background-color: rgb(44, 110, 96);
     border: 3px solid black;
@@ -66,4 +68,9 @@ body{
     height: 50px;
     cursor: pointer;
     color: white;
+}
+.rvil{
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

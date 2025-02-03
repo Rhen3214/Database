@@ -44,10 +44,38 @@ async function fetchData() {
             fundp.innerHTML = funder;
             borrowp.innerText = borrower   
             borrowernamep.innerText = borrowernamep
+            
+            const detaildiv = document.createElement('div')
+            detaildiv.classList ='diva'
 
-            detail.append(fundp)
-            detail.append(borrowp)
-            detail.append(borrowername)
+            detaildiv.append(fundp)
+            detaildiv.append(borrowp)
+            detaildiv.append(borrowername)
+
+            
+            detail.append(detaildiv)
+
+            const rec = result[k].findIndex(row => row[0] === "Warehouse Amount") 
+
+            if(rec !== -1){
+               const reconavail = document.createElement('p')
+               const rvil = document.createElement('div')
+               rvil.classList ="rvil"
+               reconavail.innerText = "Recon Available"
+               reconavail.style.backgroundColor = '#41b541'
+               reconavail.style.borderRadius = '8px'
+               rvil.append(reconavail) 
+               detail.append(rvil)
+            }else{
+               const reconavail = document.createElement('p')
+               const rvil = document.createElement('div')
+               rvil.classList ="rvil"
+               reconavail.innerText = "No Recon"
+               reconavail.style.backgroundColor = '#e0515f'
+               reconavail.style.borderRadius = '8px'
+               rvil.append(reconavail) 
+               detail.append(rvil)
+            }
 
             box.append(detail)
         }
