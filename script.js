@@ -1,133 +1,118 @@
 async function fetchData() {
     const url = "https://script.google.com/macros/s/AKfycbzBMLJpIS5sMAQyR1CMIH32lDbBKv8Fj-OBboHNSjXNhHcFicKZCZz8zMwbSqJklZ2HDA/exec";  
     const loader = document.querySelector('.loader');
+    const box = document.querySelector('.box');
 
     try {
         loader.style.display = 'block'; // Show loader before fetching data
-        
+
+        // Stream large data
         let response = await fetch(url);
-        let data = await response.json();
+        let reader = response.body.getReader();
+        let decoder = new TextDecoder();
+        let result = '';
+        let { value, done } = await reader.read();
 
-        function splitUserData() {
-            let usersData = [];
-            let currentData = [];
-
-            for (let i = 0; i < data.length; i++) {
-                if (data[i][0] === "" && data[i][1] === "") continue;
-                
-                if (data[i][0] === "User" && currentData.length > 0) {
-                    usersData.push(currentData);
-                    currentData = [];
-                }
-                
-                currentData.push(data[i]);
-            }
-
-            if (currentData.length > 0) usersData.push(currentData);
-
-            return usersData;
+        while (!done) {
+            result += decoder.decode(value, { stream: true });
+            ({ value, done } = await reader.read());
         }
-        
-        let result = splitUserData();  
-        result.reverse();
 
-        const box = document.querySelector('.box');
-        if (box.children.length > 0) {  
-            box.innerHTML = '';  
+        let data = JSON.parse(result);
+        console.log(data);
+
+        // ✅ Non-mutating reverse function
+        function getReversedUserData() {
+            return data.reduce((usersData, row) => {
+                if (row[0] === "User") usersData.push([]);
+                if (usersData.length > 0) usersData[usersData.length - 1].push(row);
+                return usersData;
+            }, []).slice().reverse(); // Reverse without mutating
         }
-        
-        for (let k = 0; k < result.length; k++) {
-            const funder = "Funder:" + result[k][0][1];
-            const borrower = "Loan Number:" + result[k][1][1];
-            const borrowername = "Borrower:" + result[k][2][1];
+
+        let usersData = getReversedUserData();
+
+        // ✅ Use Document Fragment to reduce DOM reflows
+        const fragment = document.createDocumentFragment();
+
+        usersData.forEach(user => {
+            const funder = `Funder: ${user[0][1]}`;
+            const borrower = `Loan Number: ${user[1][1]}`;
+            const borrowername = `Borrower: ${user[2][1]}`;
+
             const detail = document.createElement('div');
-            detail.classList ='inside';
+            detail.classList.add('inside');
 
-            const fundp = document.createElement('p');
-            const borrowp = document.createElement('p');
-            const borrowernamep = document.createElement('p');
-
-            fundp.innerHTML = funder;
-            borrowp.innerText = borrower;
-            borrowernamep.innerText = borrowername;
-            
             const detaildiv = document.createElement('div');
-            detaildiv.classList ='diva';
+            detaildiv.classList.add('diva');
 
-            detaildiv.append(fundp);
-            detaildiv.append(borrowp);
-            detaildiv.append(borrowernamep);
-            detail.append(detaildiv);
+            detaildiv.innerHTML = `
+                <p>${funder}</p>
+                <p>${borrower}</p>
+                <p>${borrowername}</p>
+            `;
 
-            const rec = result[k].findIndex(row => row[0] === "Warehouse Amount"); 
+            detail.appendChild(detaildiv);
 
-            const rvil = document.createElement('div');
-            rvil.classList = "rvil";
-            const reconavail = document.createElement('p');
+            // ✅ Check for Warehouse Amount
+            const hasRecon = user.some(row => row[0] === "Warehouse Amount");
+            const reconDiv = document.createElement('div');
+            reconDiv.classList.add('rvil');
+            reconDiv.innerHTML = `
+                <p style="background-color: ${hasRecon ? '#41b541' : '#e0515f'}; border-radius: 8px;">
+                    ${hasRecon ? 'Recon Available' : 'No Recon'}
+                </p>
+            `;
 
-            if (rec !== -1) {
-                reconavail.innerText = "Recon Available";
-                reconavail.style.backgroundColor = '#41b541';
-            } else {
-                reconavail.innerText = "No Recon";
-                reconavail.style.backgroundColor = '#e0515f';
-            }
-            
-            reconavail.style.borderRadius = '8px';
-            rvil.append(reconavail);
-            detail.append(rvil);
-            box.append(detail);
-        }
+            detail.appendChild(reconDiv);
+            fragment.appendChild(detail);
+
+            // ✅ Attach user data to the element for modal retrieval
+            detail.dataset.userIndex = usersData.indexOf(user);
+        });
+
+        box.innerHTML = '';  // Clear previous content
+        box.appendChild(fragment);
 
         document.getElementById('search').placeholder = "";
 
-        let items = document.querySelectorAll('.inside');
-        const modal = document.querySelector('.modal');
-
-        items.forEach(item => {
+        // ✅ Modal Event Listener (Fix)
+        document.querySelectorAll('.inside').forEach(item => {
             item.addEventListener('click', () => {
-                modal.style.display = 'flex';
-                const current = item.innerText;
+                document.querySelector('.modal').style.display = 'flex';
+                const userIndex = item.dataset.userIndex;
+                const user = usersData[userIndex];
 
-                result.forEach(row => {
-                    if (current.includes(row[1][1])) {
-                        const deets = document.querySelector('.default');
-
-                        const formattedDetails = row.map(item => 
-                            `<p><strong>${item[0]}:</strong> ${item[1]}</p>`
-                        ).join(""); 
-
-                        deets.innerHTML = formattedDetails;
-                    }
-                });
-            });
-        });
-
-        document.addEventListener('click', e=> {
-             if(e.target.classList == "modal"){
-                e.target.style.display ='none';
-             }
-        });
-
-        // ✅ SEARCH FUNCTIONALITY
-        const search = document.getElementById('search');
-
-        search.addEventListener('input', function() {
-            const searchText = search.value.toLowerCase();
-            const searchTerms = searchText.split(' ').filter(term => term !== ''); 
-            const items = document.querySelectorAll('.inside');
-
-            items.forEach(item => {
-                const itemText = item.innerText.toLowerCase();
-                const matches = searchTerms.every(term => itemText.includes(term));
-
-                if (matches) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
+                if (user) {
+                    document.querySelector('.default').innerHTML = user.map(item => 
+                        `<p><strong>${item[0]}:</strong> ${item[1]}</p>`).join(""); 
                 }
             });
         });
+
+        // ✅ Close Modal on Click Outside
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+
+        // ✅ Optimized Search Function with Debounce
+        function debounce(func, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), delay);
+            };
+        }
+
+        const search = document.getElementById('search');
+        search.addEventListener('input', debounce(() => {
+            const searchText = search.value.toLowerCase();
+            document.querySelectorAll('.inside').forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(searchText) ? 'block' : 'none';
+            });
+        }, 300)); // 300ms debounce delay
 
     } catch (error) {
         console.error("Error fetching data:", error);
